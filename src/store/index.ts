@@ -24,7 +24,7 @@ export default createStore({
               type: 'Point',
               coordinates: [entity.lon, entity.lat],
             },
-            properties: {},
+            properties: entity,
           };
         }),
       };

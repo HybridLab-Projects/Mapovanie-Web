@@ -2,7 +2,19 @@
 	<!-- <div class="bg-green-600 rounded-3xl mx-8 h-32 p-5 h-1/">
 		<h1 class="text-center text-white text-3xl">Tailwind test</h1>
 		<h2 class="text-center text-gray-200 text-xl font-bold mt-2">Subtitle</h2> -->
-	<div id="mapContainer" class="h-screen w-screen"></div>
+	<div id="mapContainer" class="h-screen w-screen">
+		<transition name="fade">
+			<div
+				v-if="Object.keys(selected).length"
+				id="info"
+				class="h-auto w-96 p-6 bg-white absolute z-50 top-5 left-5 rounded-3xl"
+			>
+				<h1 class="text-2xl text-center pb-5">{{ selected.type }}</h1>
+				<img src="https://via.placeholder.com/512" alt="image" />
+				<p class="text-sm text-gray-500 pt-5">Pridané: 1. decembra 2020</p>
+			</div>
+		</transition>
+	</div>
 	<!-- </div> -->
 </template>
 
@@ -18,10 +30,15 @@ export default defineComponent({
 	computed: {
 		...mapState(['geoJson']),
 	},
+	data() {
+		return {
+			selected: {},
+		};
+	},
 	mounted() {
 		const map = new MapBox.Map({
 			container: 'mapContainer',
-			style: 'mapbox://styles/jakubkoje/ckim5ey4c2jsm17p3878yj22c',
+			style: 'mapbox://styles/jakubkoje/ckiogg5tc4r8g17s7mgiu80ta',
 			center: [17.117229, 48.138243],
 			zoom: 9,
 		});
@@ -49,24 +66,8 @@ export default defineComponent({
 					//   * Blue, 20px circles when point count is less than 100
 					//   * Yellow, 30px circles when point count is between 100 and 750
 					//   * Pink, 40px circles when point count is greater than or equal to 750
-					'circle-color': [
-						'step',
-						['get', 'point_count'],
-						'#51bbd6',
-						100,
-						'#f1f075',
-						750,
-						'#f28cb1',
-					],
-					'circle-radius': [
-						'step',
-						['get', 'point_count'],
-						20,
-						100,
-						30,
-						750,
-						40,
-					],
+					'circle-color': '#ffffff',
+					'circle-radius': 25,
 				},
 			});
 
@@ -86,15 +87,32 @@ export default defineComponent({
 				id: 'unclustered-point',
 				type: 'circle',
 				source: 'earthquakes',
-				filter: ['!', ['has', 'point_count']],
+				filter: ['!=', 'cluster', true],
 				paint: {
-					'circle-color': '#11b4da',
-					'circle-radius': 4,
-					'circle-stroke-width': 1,
-					'circle-stroke-color': '#fff',
+					'circle-color': '#66E480',
+					'circle-radius': 15,
+					'circle-stroke-width': 7.5,
+					'circle-stroke-color': 'rgba(102, 228, 128, 0.5)',
 				},
 			});
+			//@ts-expect-error
+			map.loadImage('/icon/leaf-tree.png', (err, image) => {
+				if (err) throw err;
+				map.addImage('leaf', image);
+				map.addLayer({
+					id: 'point-icon',
+					type: 'symbol',
+					source: 'earthquakes',
+					filter: ['!=', 'cluster', true],
+					layout: {
+						'icon-image': 'leaf',
+						'icon-size': 0.05,
+					},
+				});
+			});
+
 			map.on('click', 'clusters', function (e) {
+				console.log('clustered');
 				const features = map.queryRenderedFeatures(e.point, {
 					layers: ['clusters'],
 				});
@@ -111,16 +129,30 @@ export default defineComponent({
 					});
 				}
 			});
-			map.on('click', 'unclustered-point', function (e) {
-				console.log(e);
+			map.on('click', 'unclustered-point', (e) => {
+				console.log('unclustered', e);
+				if (e.features) this.selected = e.features[0].properties as object;
 			});
 			map.on('click', (e) => {
-				console.log('object', e);
+				if (
+					map
+						.queryRenderedFeatures(e.point)
+						.filter((feature) => feature.source === 'earthquakes').length === 0
+				) {
+					console.log('Basemap click');
+					this.selected = {};
+				}
 			});
 			map.on('mouseenter', 'clusters', function () {
 				map.getCanvas().style.cursor = 'pointer';
 			});
 			map.on('mouseleave', 'clusters', function () {
+				map.getCanvas().style.cursor = '';
+			});
+			map.on('mouseenter', 'unclustered-point', function () {
+				map.getCanvas().style.cursor = 'pointer';
+			});
+			map.on('mouseleave', 'unclustered-point', function () {
 				map.getCanvas().style.cursor = '';
 			});
 		});
@@ -129,4 +161,13 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+	transition: opacity 0.1s ease-in-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+	opacity: 0;
+}
 </style>
