@@ -9,9 +9,11 @@
 				id="info"
 				class="h-auto w-96 p-6 bg-white absolute z-50 top-5 left-5 rounded-3xl"
 			>
-				<h1 class="text-2xl text-center pb-5">{{ selected.type }}</h1>
-				<img src="https://via.placeholder.com/512" alt="image" />
-				<p class="text-sm text-gray-500 pt-5">Pridané: 1. decembra 2020</p>
+				<h1 class="text-2xl pb-5">{{ treeTypes[selected.sub_type] }} strom</h1>
+				<img :src="JSON.parse(selected.images)[0].url" alt="image" />
+				<p class="text-sm text-gray-500 pt-5">
+					Pridaný: {{ getParsedTime(selected.date) }}
+				</p>
 			</div>
 		</transition>
 	</div>
@@ -21,6 +23,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 
+import Moment from 'moment';
 import MapBox from '@/plugins/mapbox';
 import { GeoJSONSource, NavigationControl } from 'mapbox-gl';
 import { mapState } from 'vuex';
@@ -33,7 +36,32 @@ export default defineComponent({
 	data() {
 		return {
 			selected: {},
+			treeTypes: {
+				leaf: 'Listnatý',
+				fir: 'Ihličnatý',
+			},
 		};
+	},
+	methods: {
+		getParsedTime(time: string) {
+			Moment.locale('sk', {
+				months: [
+					'januára',
+					'februára',
+					'marca',
+					'apríla',
+					'mája',
+					'júna',
+					'júla',
+					'augusta',
+					'septembra',
+					'októbra',
+					'novembra',
+					'decembra',
+				],
+			});
+			return Moment(time).format('D. MMMM YYYY');
+		},
 	},
 	mounted() {
 		const map = new MapBox.Map({

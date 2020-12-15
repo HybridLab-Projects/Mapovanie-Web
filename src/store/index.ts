@@ -34,7 +34,10 @@ export default createStore({
   actions: {
     async fetchEntities({ commit }) {
       try {
-        const { data } = await Axios.get('http://localhost:8000/api/entities');
+        const { data } = await Axios.get(
+          'https://mapovanie.hybridlab.dev/backend/api/entities'
+        );
+        console.log(data.data);
         commit('entitiesFetched', data.data);
       } catch (err) {
         console.log(err);
