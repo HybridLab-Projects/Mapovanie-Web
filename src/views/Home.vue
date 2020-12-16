@@ -135,16 +135,33 @@ export default defineComponent({
 			map.loadImage('/icon/leaf-tree.png', (err, image) => {
 				if (err) throw err;
 				map.addImage('leaf', image);
-				map.addLayer({
-					id: 'point-icon',
-					type: 'symbol',
-					source: 'earthquakes',
-					filter: ['!=', 'cluster', true],
-					layout: {
-						'icon-image': 'leaf',
-						'icon-size': 0.05,
-					},
-				});
+			});
+			//@ts-expect-error
+			map.loadImage('/icon/fir-tree.png', (err, image) => {
+				if (err) throw err;
+				map.addImage('fir', image);
+			});
+
+			map.addLayer({
+				id: 'point-icon',
+				type: 'symbol',
+				source: 'earthquakes',
+				filter: ['!=', 'cluster', true],
+				layout: {
+					'icon-image': [
+						'case',
+						// 1
+						['==', ['get', 'sub_type'], 'leaf'],
+						'leaf',
+						// 2
+						['==', ['get', 'sub_type'], 'fir'],
+						'fir',
+						// default
+						'leaf',
+					],
+
+					'icon-size': 0.05,
+				},
 			});
 
 			map.on('click', 'clusters', function (e) {
