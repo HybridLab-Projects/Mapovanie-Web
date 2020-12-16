@@ -7,12 +7,20 @@
 			<div
 				v-if="Object.keys(selected).length"
 				id="info"
-				class="h-auto w-96 p-6 bg-white absolute z-50 top-5 left-5 rounded-3xl"
+				class="h-auto w-96 p-6 bg-white absolute z-50 top-5 left-5 rounded-3xl shadow-2xl"
 			>
 				<h1 class="text-2xl pb-5">{{ treeTypes[selected.sub_type] }} strom</h1>
-				<img :src="JSON.parse(selected.images)[0].url" alt="image" />
+				<img
+					:src="
+						JSON.parse(selected.images)[0]
+							? JSON.parse(selected.images)[0].url
+							: ''
+					"
+					alt="image"
+				/>
 				<p class="text-sm text-gray-500 pt-5">
-					Pridaný: {{ getParsedTime(selected.date) }}
+					Strom bol pridaný
+					<span class="font-semibold">{{ getParsedTime(selected.date) }}</span>
 				</p>
 			</div>
 		</transition>
@@ -44,7 +52,7 @@ export default defineComponent({
 	},
 	methods: {
 		getParsedTime(time: string) {
-			Moment.locale('sk', {
+			Moment.updateLocale('sk', {
 				months: [
 					'januára',
 					'februára',
@@ -79,7 +87,7 @@ export default defineComponent({
 				// from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
 				data: this.geoJson,
 				cluster: true,
-				clusterMaxZoom: 14, // Max zoom to cluster points on
+				clusterMaxZoom: 100, // Max zoom to cluster points on
 				clusterRadius: 50, // Radius of each cluster when clustering points (defaults to 50)
 			});
 
