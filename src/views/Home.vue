@@ -125,10 +125,31 @@ export default defineComponent({
 				source: 'earthquakes',
 				filter: ['!=', 'cluster', true],
 				paint: {
-					'circle-color': '#66E480',
+					'circle-color': [
+						'case',
+						// 1
+						['==', ['get', 'sub_type'], 'leaf'],
+						'#66E480',
+						// 2
+						['==', ['get', 'sub_type'], 'fir'],
+						'#4CB962',
+						// default
+						'#66E480',
+					],
 					'circle-radius': 15,
 					'circle-stroke-width': 7.5,
-					'circle-stroke-color': 'rgba(102, 228, 128, 0.5)',
+					'circle-stroke-color': [
+						'case',
+						// 1
+						['==', ['get', 'sub_type'], 'leaf'],
+						'rgba(102, 228, 128, 0.5)',
+						// 2
+						['==', ['get', 'sub_type'], 'fir'],
+						'rgba(76,185,98, 0.5)',
+						// default
+						'rgba(102, 228, 128, 0.5)',
+					],
+					// 'rgba(102, 228, 128, 0.5)',
 				},
 			});
 			//@ts-expect-error
