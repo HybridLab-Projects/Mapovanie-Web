@@ -2,20 +2,19 @@ import { createStore } from 'vuex';
 
 import Axios from 'axios';
 
-interface Entity {
-  lon: string;
-  lat: string;
-}
+import { Entity } from '@/types';
+import { GeoJSON } from 'geojson';
 
 export default createStore({
   state: {
-    mapEntities: [],
-    geoJson: {},
+    mapEntities: [] as Array<Entity>,
+    geoJson: {} as GeoJSON,
+
   },
   mutations: {
     entitiesFetched(state, entities) {
       state.mapEntities = entities;
-      const parsedGeoJson = {
+      state.geoJson = {
         type: 'FeatureCollection',
         features: entities.map((entity: Entity) => ({
           type: 'Feature',
@@ -26,7 +25,6 @@ export default createStore({
           properties: entity,
         })),
       };
-      state.geoJson = parsedGeoJson;
     },
   },
   actions: {
