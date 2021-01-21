@@ -1,3 +1,10 @@
+import { GeoJSON } from 'geojson';
+
+export interface State {
+    mapEntities: Array<Entity>;
+    geoJson: GeoJSON;
+}
+
 export interface Entity {
     id: string | number;
     type: string;
