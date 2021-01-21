@@ -39,7 +39,6 @@ import { defineComponent } from 'vue';
 import Moment from 'moment';
 import MapBox from '@/plugins/mapbox';
 import { GeoJSONSource, NavigationControl } from 'mapbox-gl';
-import { mapState } from 'vuex';
 
 export default defineComponent({
   name: 'Home',
@@ -54,7 +53,9 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapState(['geoJson']),
+    geoJson() {
+      return this.$store.state.geoJson;
+    },
   },
   mounted() {
     const map = new MapBox.Map({

@@ -3,23 +3,23 @@ import { createStore } from 'vuex';
 import Axios from 'axios';
 
 import { Entity, State } from '@/types';
-import { GeoJSON } from 'geojson';
+import { Feature, FeatureCollection, Point } from 'geojson';
 
 export default createStore<State>({
   state: {
-    mapEntities: [],
-    geoJson: {} as GeoJSON,
+    mapEntities: [] as Array<Entity>,
+    geoJson: {} as FeatureCollection<Point, Entity>,
   },
   mutations: {
     entitiesFetched(state, entities) {
       state.mapEntities = [entities];
       state.geoJson = {
         type: 'FeatureCollection',
-        features: entities.map((entity: Entity) => ({
+        features: entities.map((entity: Entity): Feature<Point, Entity> => ({
           type: 'Feature',
           geometry: {
             type: 'Point',
-            coordinates: [entity.lon, entity.lat],
+            coordinates: [+entity.lon, +entity.lat],
           },
           properties: entity,
         })),

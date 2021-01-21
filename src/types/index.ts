@@ -1,8 +1,8 @@
-import { GeoJSON } from 'geojson';
+import { FeatureCollection, Point } from 'geojson';
 
 export interface State {
     mapEntities: Array<Entity>;
-    geoJson: GeoJSON;
+    geoJson: FeatureCollection<Point, Entity>;
 }
 
 export interface Entity {
