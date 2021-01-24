@@ -12,8 +12,17 @@
         id="info"
         class="h-auto w-96 p-6 bg-white absolute z-50 top-5 left-5 rounded-3xl shadow-2xl"
       >
-        <h1 class="text-2xl pb-5">
+        <h1
+          v-if="selected.type === 'tree'"
+          class="text-2xl pb-5"
+        >
           {{ treeTypes[selected.sub_type] }} strom
+        </h1>
+        <h1
+          v-else-if="selected.type === 'bench'"
+          class="text-2xl pb-5"
+        >
+          Lavička
         </h1>
         <img
           :src="
@@ -24,7 +33,7 @@
           alt="image"
         >
         <p class="text-sm text-gray-500 pt-5">
-          Strom bol pridaný
+          {{ selected.type === 'strom' ? 'Strom bol pridaný ' : 'Lavička bola pridaná ' }}
           <span class="font-semibold">{{ getParsedTime(selected.date) }}</span>
         </p>
       </div>
@@ -67,10 +76,8 @@ export default defineComponent({
     const navigation = new NavigationControl();
     map.addControl(navigation, 'top-right');
     map.on('load', () => {
-      map.addSource('earthquakes', {
+      map.addSource('entities', {
         type: 'geojson',
-        // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
-        // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
         data: this.geoJson,
         cluster: true,
         clusterMaxZoom: 100, // Max zoom to cluster points on
@@ -80,14 +87,9 @@ export default defineComponent({
       map.addLayer({
         id: 'clusters',
         type: 'circle',
-        source: 'earthquakes',
+        source: 'entities',
         filter: ['has', 'point_count'],
         paint: {
-          // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-          // with three steps to implement three types of circles:
-          //   * Blue, 20px circles when point count is less than 100
-          //   * Yellow, 30px circles when point count is between 100 and 750
-          //   * Pink, 40px circles when point count is greater than or equal to 750
           'circle-color': '#CCCCCC',
           'circle-radius': 25,
         },
@@ -96,7 +98,7 @@ export default defineComponent({
       map.addLayer({
         id: 'cluster-count',
         type: 'symbol',
-        source: 'earthquakes',
+        source: 'entities',
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '{point_count_abbreviated}',
@@ -108,7 +110,7 @@ export default defineComponent({
       map.addLayer({
         id: 'unclustered-point',
         type: 'circle',
-        source: 'earthquakes',
+        source: 'entities',
         filter: ['!=', 'cluster', true],
         paint: {
           'circle-color': [
@@ -119,6 +121,9 @@ export default defineComponent({
             // 2
             ['==', ['get', 'sub_type'], 'fir'],
             '#4CB962',
+            // 3
+            ['==', ['get', 'type'], 'bench'],
+            '#3FA190',
             // default
             '#66E480',
           ],
@@ -131,28 +136,33 @@ export default defineComponent({
             'rgba(102, 228, 128, 0.5)',
             // 2
             ['==', ['get', 'sub_type'], 'fir'],
-            'rgba(76,185,98, 0.5)',
+            'rgba(76, 185, 98, 0.5)',
+            // 3
+            ['==', ['get', 'type'], 'bench'],
+            'rgba(63, 161, 144, 0.5)',
             // default
             'rgba(102, 228, 128, 0.5)',
           ],
           // 'rgba(102, 228, 128, 0.5)',
         },
       });
-      // @ts-expect-error
-      map.loadImage('/icon/leaf-tree.png', (err, image) => {
+      map.loadImage('/icon/leaf-tree.png', (err: Error, image: ImageBitmap) => {
         if (err) throw err;
         map.addImage('leaf', image);
       });
-      // @ts-expect-error
-      map.loadImage('/icon/fir-tree.png', (err, image) => {
+      map.loadImage('/icon/fir-tree.png', (err: Error, image: ImageBitmap) => {
         if (err) throw err;
         map.addImage('fir', image);
+      });
+      map.loadImage('/icon/bench.png', (err: Error, image: ImageBitmap) => {
+        if (err) throw err;
+        map.addImage('bench', image);
       });
 
       map.addLayer({
         id: 'point-icon',
         type: 'symbol',
-        source: 'earthquakes',
+        source: 'entities',
         filter: ['!=', 'cluster', true],
         layout: {
           'icon-image': [
@@ -163,11 +173,14 @@ export default defineComponent({
             // 2
             ['==', ['get', 'sub_type'], 'fir'],
             'fir',
+            // 3
+            ['==', ['get', 'type'], 'bench'],
+            'bench',
             // default
             'leaf',
           ],
 
-          'icon-size': 0.05,
+          'icon-size': 0.35,
         },
       });
 
@@ -178,7 +191,7 @@ export default defineComponent({
         });
         if (features[0].properties) {
           const clusterId = features[0].properties.cluster_id;
-          const test = map.getSource('earthquakes') as GeoJSONSource;
+          const test = map.getSource('entities') as GeoJSONSource;
           test.getClusterExpansionZoom(clusterId, (err, zoom) => {
             if (err) return;
             map.easeTo({
@@ -197,7 +210,7 @@ export default defineComponent({
         if (
           map
             .queryRenderedFeatures(e.point)
-            .filter((feature) => feature.source === 'earthquakes').length === 0
+            .filter((feature) => feature.source === 'entities').length === 0
         ) {
           console.log('Basemap click');
           this.selected = {};
