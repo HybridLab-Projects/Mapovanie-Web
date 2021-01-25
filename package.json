@@ -6,7 +6,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "lint:scss": "stylelint ./src/**/*.{vue,scss} --fix"
+    "lint:scss": "stylelint ./src/**/*.{vue,scss} --fix",
+    "deploy": "npm install && npm run build && rm -rf ../htdocs/mapa/ && cp -r dist/. ../htdocs/mapa/"
   },
   "dependencies": {
     "axios": "^0.21.0",
